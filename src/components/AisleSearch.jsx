@@ -43,7 +43,6 @@ function AisleSearch({
 
     function handleUserscriptMessage(event) {
       if (
-        event.source !== window ||
         event.origin !== window.location.origin ||
         event.data?.channel !== USERSCRIPT_CHANNEL
       ) {

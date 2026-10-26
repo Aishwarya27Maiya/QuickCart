@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Aisle Finder - Walmart aisle helper
 // @namespace    aislefinder.local
-// @version      4.4.0
+// @version      4.4.1
 // @description  Saves Walmart aisle notes to your local Quick Cart.
 // @downloadURL  https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
 // @updateURL    https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
@@ -333,7 +333,7 @@ function startManual() {
   GM_addValueChangeListener(REPORT_KEY, forward);
   GM_addValueChangeListener(MANUAL_KEY, forwardManual);
   window.addEventListener('message', (event) => {
-    if (event.source !== window || event.origin !== location.origin || event.data?.channel !== CHANNEL) return;
+    if (event.origin !== location.origin || event.data?.channel !== CHANNEL) return;
     if (!document.documentElement.hasAttribute('data-cartpath-app')) return;
     const message = event.data;
     if (message.type === 'manual_pull') { forwardManual(); return; }

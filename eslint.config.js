@@ -28,6 +28,7 @@ export default defineConfig([
     files: ['public/aisle-finder-helper.user.js'],
     languageOptions: {
       globals: {
+        GM: 'readonly',
         GM_addValueChangeListener: 'readonly',
         GM_deleteValue: 'readonly',
         GM_getValue: 'readonly',

@@ -54,7 +54,7 @@ development, the helper also supports `http://localhost:<Vite port>` and
 Quick Cart origins.
 
 Mobile userscript support depends on the phone and browser. On iPhone, the
-free Userscripts Safari extension is supported by helper version 4.5.0 and
+free Userscripts Safari extension is supported by helper version 4.5.1 and
 later; enable it for Walmart and Quick Cart in Safari settings. On Android, use
 a browser that supports userscripts; the standard Chrome for Android app does
 not run userscript extensions. Quick Cart itself works in a mobile browser
@@ -99,6 +99,6 @@ Cart accepts the aisle note; its helper-list count is only for **Copy all**.
 
 The helper timestamps queued notes. Quick Cart ignores notes queued before the
 current page session, so stale helper entries cannot appear as results from a
-new search. Update the helper to version 4.5.0 or later for this protection and
+new search. Update the helper to version 4.5.1 or later for this protection and
 compatibility with the free Userscripts Safari extension; if an older queued
 note is needed, add it again with the updated helper.

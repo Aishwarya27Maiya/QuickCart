@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Aisle Finder - Walmart aisle helper
 // @namespace    aislefinder.local
-// @version      4.5.0
+// @version      4.5.1
 // @description  Saves Walmart aisle notes to your local Quick Cart.
 // @downloadURL  https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
 // @updateURL    https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
@@ -25,7 +25,8 @@ const JOB_KEY = "cartpath.job";
 const REPORT_KEY = "cartpath.report";
 const MANUAL_KEY = "cartpath.manual-aisles";
 const QUICK_CART_URL = "https://aishwarya27maiya.github.io/QuickCart/";
-const userscriptGM = () => globalThis["GM"];
+const userscriptGM = () =>
+  typeof GM !== "undefined" ? GM : globalThis["GM"];
 const storageErrorMessage = (error) =>
   error instanceof Error ? error.message : String(error);
 const getValue = async (key, fallback) => {

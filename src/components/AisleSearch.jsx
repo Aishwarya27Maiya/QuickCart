@@ -298,13 +298,7 @@ function AisleSearch({
       )}`
       if (!helperReady) {
         const walmartTab = window.open(walmartSearchUrl, '_blank')
-        if (!walmartTab) {
-          setHelperMessage(
-            'Your browser blocked the Walmart tab. Allow pop-ups for Quick Cart and try again.',
-          )
-          return
-        }
-        walmartTab.opener = null
+        if (walmartTab) walmartTab.opener = null
         setHelperMessage(
           'Opened Walmart search. The aisle helper is not connected, so aisle details will not return automatically.',
         )
@@ -314,13 +308,7 @@ function AisleSearch({
       const requestId = createRequestId()
       const searchItems = [{ id: item.id, name: item.name }]
       const walmartUrl = `${walmartSearchUrl}#cartpath=${requestId}`
-      const walmartTab = window.open(walmartUrl, '_blank')
-      if (!walmartTab) {
-        setHelperMessage(
-          'Your browser blocked the Walmart tab. Allow pop-ups for Quick Cart and try again.',
-        )
-        return
-      }
+      window.open(walmartUrl, '_blank')
 
       onSearchStarted({
         searchId: requestId,

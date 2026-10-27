@@ -89,11 +89,12 @@ The saved-item count reflects the Walmart currently selected in **Find store**.
 A new search result updates the saved note for the same item at the same
 store instead of creating a duplicate.
 
-On Walmart, the helper's **Add to my list** button also sends each entered aisle
-note to Quick Cart. Keep Quick Cart open and select a store; valid aisle notes
-are saved under that store and shown in **Saved aisles**. Notes entered before a
-store is selected remain queued until you choose one. **Copy all** remains
-available for copying the helper's full list.
+On Walmart, the helper's **Add to my list** button sends each entered item and
+aisle note to Quick Cart. Keep Quick Cart open and select a store; valid entries
+are added to the grocery list if they are not already there, and aisle notes
+are saved under that store in **Saved aisles**. Notes entered before a store is
+selected remain queued until you choose one. **Copy all** remains available for
+copying the helper's full list.
 
 The helper timestamps queued notes. Quick Cart ignores notes queued before the
 current page session, so stale helper entries cannot appear as results from a

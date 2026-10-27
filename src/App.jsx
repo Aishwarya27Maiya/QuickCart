@@ -221,6 +221,25 @@ function App() {
       if (!selectedStore || !entries.length) return false
       const searchId = `manual-${crypto.randomUUID()}`
       const updatedAt = new Date().toISOString()
+      setItems((currentItems) => {
+        const existingNames = new Set(
+          currentItems.map((item) => item.name.trim().toLowerCase()),
+        )
+        const newItems = entries
+          .map((entry) => entry.itemName.trim())
+          .filter((name) => {
+            const key = name.toLowerCase()
+            if (existingNames.has(key)) return false
+            existingNames.add(key)
+            return true
+          })
+          .map((name) => ({
+            id: nextItemId.current++,
+            name,
+            selected: false,
+          }))
+        return newItems.length ? [...currentItems, ...newItems] : currentItems
+      })
       setAisleViewScope({
         searchId,
         storeId: selectedStore.id,

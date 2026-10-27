@@ -116,9 +116,11 @@ function AisleSearch({
         }
         if (saved) {
           setHelperMessage(
-            `Saved ${validEntries.length} aisle ${
+            `Added or updated ${validEntries.length} grocery ${
+              validEntries.length === 1 ? 'item' : 'items'
+            } and saved their aisle ${
               validEntries.length === 1 ? 'note' : 'notes'
-            } from the aisle helper. Check the Saved aisles tab.`,
+            }. Check the Plan a trip and Saved aisles tabs.`,
           )
         } else if (freshEntries.length) {
           setHelperMessage(

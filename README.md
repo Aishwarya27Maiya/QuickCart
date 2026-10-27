@@ -61,9 +61,12 @@ automatic aisle lookup requires it.
 Select grocery items to show them in the Shopping Guide. Use the search icon
 beside an item to look up that item's aisle. Aisle details remain hidden until
 the helper returns a verified aisle. With Tampermonkey enabled, Quick Cart
-opens a separate Walmart tab and keeps Quick Cart open in its own tab. Sign in,
-confirm the store, and start the search in the Walmart tab when prompted. The
-helper does not read or send passwords, cookies, or account credentials. Aisle
+opens a separate browser tab through a Quick Cart handoff page, then opens the
+Walmart search while keeping Quick Cart in its own tab. On iPhone, iOS may still
+hand Walmart links to the Walmart app; use Safari's website option or
+temporarily remove the Walmart app if that happens. Sign in, confirm the store,
+and start the search in the Walmart tab when prompted. The helper does not read
+or send passwords, cookies, or account credentials. Aisle
 details are saved in this
 browser and associated with the selected store and grocery item. The helper is
 best-effort and can stop working if Walmart changes its page.

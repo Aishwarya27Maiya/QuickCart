@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Opening Walmart in Safari — Quick Cart</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #fbfaf7;
+        color: #1d2821;
+        font: 16px/1.5 system-ui, sans-serif;
+      }
+
+      main {
+        max-width: 28rem;
+        padding: 2rem;
+        text-align: center;
+      }
+
+      a {
+        color: #17603f;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Opening Walmart in Safari…</h1>
+      <p>Quick Cart will remain open in its own tab.</p>
+      <p id="fallback" hidden>
+        If the page doesn’t open, use this
+        <a id="walmart-link" rel="noreferrer">Walmart search link</a>.
+      </p>
+    </main>
+    <script>
+      const parameters = new URLSearchParams(location.search)
+      const searchTerm = parameters.get('q')
+      const requestId = parameters.get('requestId')
+      const walmartUrl = new URL('https://www.walmart.com/search')
+      const validRequestId = /^[a-f0-9-]{36}$/.test(requestId || '')
+
+      if (searchTerm && searchTerm.length <= 120) {
+        walmartUrl.searchParams.set('q', searchTerm)
+        if (validRequestId) walmartUrl.hash = `cartpath=${requestId}`
+        document.getElementById('walmart-link').href = walmartUrl.href
+        document.getElementById('fallback').hidden = false
+        window.setTimeout(() => location.replace(walmartUrl.href), 800)
+      } else {
+        document.querySelector('h1').textContent =
+          'Could not open the Walmart search'
+        document.querySelector('main > p').textContent =
+          'Return to Quick Cart and try searching for the item again.'
+      }
+    </script>
+  </body>
+</html>

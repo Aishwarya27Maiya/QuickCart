@@ -3,6 +3,16 @@ import { useEffect, useRef, useState } from 'react'
 const USERSCRIPT_CHANNEL = 'cartpath-browser-v3'
 const AISLE_PATTERN = /^[A-Z]{1,3}-?\d{1,3}[A-Z]?$/
 
+function walmartHandoffUrl(searchTerm, requestId) {
+  const handoffUrl = new URL(
+    `${import.meta.env.BASE_URL}open-walmart.html`,
+    window.location.href,
+  )
+  handoffUrl.searchParams.set('q', searchTerm)
+  if (requestId) handoffUrl.searchParams.set('requestId', requestId)
+  return handoffUrl.toString()
+}
+
 function createRequestId() {
   if (!globalThis.crypto?.randomUUID) {
     throw new Error('This browser does not support secure aisle-search requests.')
@@ -293,11 +303,12 @@ function AisleSearch({
   function handleSearch(item) {
     if (!store || !item) return
     try {
-      const walmartSearchUrl = `https://www.walmart.com/search?q=${encodeURIComponent(
-        `"${item.name.replaceAll('"', '')}"`,
-      )}`
+      const searchTerm = `"${item.name.replaceAll('"', '')}"`
       if (!helperReady) {
-        const walmartTab = window.open(walmartSearchUrl, '_blank')
+        const walmartTab = window.open(
+          walmartHandoffUrl(searchTerm),
+          '_blank',
+        )
         if (walmartTab) walmartTab.opener = null
         setHelperMessage(
           'Opened Walmart search. The aisle helper is not connected, so aisle details will not return automatically.',
@@ -307,7 +318,7 @@ function AisleSearch({
 
       const requestId = createRequestId()
       const searchItems = [{ id: item.id, name: item.name }]
-      const walmartUrl = `${walmartSearchUrl}#cartpath=${requestId}`
+      const walmartUrl = walmartHandoffUrl(searchTerm, requestId)
       window.open(walmartUrl, '_blank')
 
       onSearchStarted({

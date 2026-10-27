@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Aisle Finder - Walmart aisle helper
 // @namespace    aislefinder.local
-// @version      4.4.7
+// @version      4.4.8
 // @description  Saves Walmart aisle notes to your local Quick Cart.
 // @downloadURL  https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
 // @updateURL    https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
@@ -26,18 +26,18 @@ const REPORT_KEY = "cartpath.report";
 const MANUAL_KEY = "cartpath.manual-aisles";
 const QUICK_CART_URL = "https://aishwarya27maiya.github.io/QuickCart/";
 const getValue = async (key, fallback) => {
-  if (typeof GM_getValue === "function") return GM_getValue(key, fallback);
   if (typeof globalThis.GM?.getValue === "function") return globalThis.GM.getValue(key, fallback);
+  if (typeof GM_getValue === "function") return GM_getValue(key, fallback);
   throw new Error("This userscript manager does not provide storage read access.");
 };
 const setValue = async (key, value) => {
-  if (typeof GM_setValue === "function") return GM_setValue(key, value);
   if (typeof globalThis.GM?.setValue === "function") return globalThis.GM.setValue(key, value);
+  if (typeof GM_setValue === "function") return GM_setValue(key, value);
   throw new Error("This userscript manager does not provide storage write access.");
 };
 const deleteValue = async (key) => {
-  if (typeof GM_deleteValue === "function") return GM_deleteValue(key);
   if (typeof globalThis.GM?.deleteValue === "function") return globalThis.GM.deleteValue(key);
+  if (typeof GM_deleteValue === "function") return GM_deleteValue(key);
   throw new Error("This userscript manager does not provide storage delete access.");
 };
 const isWalmart = ["www.walmart.com", "walmart.com"].includes(location.hostname);
@@ -178,6 +178,8 @@ return (function () {
       shelf: shelfInput.value.trim(),
     };
     added.push(entry);
+    renderCount();
+    statusLine.textContent = "Saving this item to Quick Cart…";
     try {
       var queuedEntries = await getValue(MANUAL_KEY, []);
       if (!Array.isArray(queuedEntries)) queuedEntries = [];
@@ -197,7 +199,9 @@ return (function () {
       renderCount();
     } catch (error) {
       console.error("Quick Cart aisle helper storage error:", error);
-      statusLine.textContent = "The helper is visible, but Userscripts storage is unavailable. Check Userscripts permissions.";
+      statusLine.textContent =
+        "Could not send this item to Quick Cart: " +
+        (error instanceof Error ? error.message : String(error));
     }
   });
 

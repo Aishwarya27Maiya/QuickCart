@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Aisle Finder - Walmart aisle helper
 // @namespace    aislefinder.local
-// @version      4.4.6
+// @version      4.4.7
 // @description  Saves Walmart aisle notes to your local Quick Cart.
 // @downloadURL  https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
 // @updateURL    https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
@@ -55,13 +55,15 @@ return (function () {
     return document.getElementById("af-status");
   }
 
-  var AISLE_RE = /\baisle[s]?\s*[:#-]?\s*([A-Z]{0,2}-?\s?\d{1,3}[A-Z]?)\b/i;
+  var AISLE_RE = /\baisle(?:\s*(?:no\.?|number))?\s*[:#-]?\s*([A-Z]{1,3}\s*-?\s*\d{1,3}[A-Z]?|\d{1,3}[A-Z]?)\b/i;
   var SECTION_RE = /\b(dairy|produce|bakery|frozen|grocery|meat|seafood|deli|health|beauty|pharmacy|pets|baby|toys|electronics|sporting goods|household|paper goods|cleaning|beverages|snacks|cereal|international|garden|automotive|apparel)\b/i;
   var FIELD = "width:100%;padding:6px;border-radius:6px;border:1px solid #2f4a3d;background:#0a1310;color:#f4f1ea;font:12px system-ui,sans-serif";
   var BUTTON = "padding:7px;border-radius:8px;border:0;background:#1f7a52;color:#fff;font-weight:600;cursor:pointer";
   var GHOST = "padding:6px;border-radius:8px;border:1px solid #2f4a3d;background:transparent;color:#f4f1ea;cursor:pointer";
 
   var added = [];
+  var lastAutoFilledAisle = "";
+  var addedOnCurrentPage = false;
 
   var panel = document.createElement("div");
   panel.id = "af-panel";
@@ -105,12 +107,26 @@ return (function () {
   });
 
   function findAisleText() {
-    var node = document.querySelector('[data-testid*="aisle" i], [class*="aisle" i]');
-    var hit = node && node.textContent ? node.textContent.match(AISLE_RE) : null;
-    if (hit) return hit[1];
+    var nodes = document.querySelectorAll(
+      '[data-testid*="aisle" i], [data-automation-id*="aisle" i], [class*="aisle" i], [aria-label*="aisle" i]',
+    );
+    for (var index = 0; index < nodes.length; index += 1) {
+      var node = nodes[index];
+      if (node.closest("#af-panel") || !node.getClientRects().length) continue;
+      var text = [
+        node.innerText,
+        node.textContent,
+        node.getAttribute("aria-label"),
+      ]
+        .filter(Boolean)
+        .join(" ");
+      var match = text.match(AISLE_RE);
+      if (match) return match[1].replace(/\s/g, "").toUpperCase();
+    }
+
     var bodyText = document.body ? document.body.innerText : "";
-    var match = bodyText.match(AISLE_RE);
-    return match ? match[1] : "";
+    var bodyMatch = bodyText.match(AISLE_RE);
+    return bodyMatch ? bodyMatch[1].replace(/\s/g, "").toUpperCase() : "";
   }
 
   function findSection() {
@@ -127,13 +143,18 @@ return (function () {
   }
 
   function prefill() {
-    itemInput.value = findItemName();
+    if (!itemInput.value.trim()) itemInput.value = findItemName();
     var aisle = findAisleText();
-    if (aisle) {
-      aisleInput.value = aisle.replace(/\s+/g, "").toUpperCase();
+    if (
+      aisle &&
+      (!aisleInput.value.trim() ||
+        aisleInput.value.replace(/\s/g, "").toUpperCase() ===
+          lastAutoFilledAisle)
+    ) {
+      aisleInput.value = aisle;
+      lastAutoFilledAisle = aisle;
       statusLine.textContent = "Aisle read from this page - check it before adding.";
-    } else {
-      aisleInput.value = "";
+    } else if (!aisleInput.value.trim()) {
       statusLine.textContent = "No aisle printed on this page. Open the item and its store aisle, or type it in.";
     }
     var section = findSection();
@@ -170,6 +191,8 @@ return (function () {
       await setValue(MANUAL_KEY, queuedEntries.slice(-500));
       statusLine.textContent = "Sent to Quick Cart. Items with a valid aisle will appear in Saved aisles; use Copy all for the full helper list.";
       aisleInput.value = "";
+      lastAutoFilledAisle = "";
+      addedOnCurrentPage = true;
       shelfInput.value = "";
       renderCount();
     } catch (error) {
@@ -212,9 +235,14 @@ return (function () {
 
   var lastUrl = location.href;
   setInterval(function () {
-    if (location.href === lastUrl) return;
-    lastUrl = location.href;
-    setTimeout(prefill, 1200);
+    if (location.href !== lastUrl) {
+      lastUrl = location.href;
+      lastAutoFilledAisle = "";
+      addedOnCurrentPage = false;
+      setTimeout(prefill, 1200);
+      return;
+    }
+    if (!addedOnCurrentPage) prefill();
   }, 1000);
 
   prefill();

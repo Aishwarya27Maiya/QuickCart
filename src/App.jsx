@@ -222,8 +222,18 @@ function App() {
       const searchId = `manual-${crypto.randomUUID()}`
       const updatedAt = new Date().toISOString()
       setItems((currentItems) => {
+        const importedNames = new Set(
+          entries.map((entry) => entry.itemName.trim().toLowerCase()),
+        )
+        const itemsWithImportedSelected = currentItems.map((item) =>
+          importedNames.has(item.name.trim().toLowerCase())
+            ? { ...item, selected: true }
+            : item,
+        )
         const existingNames = new Set(
-          currentItems.map((item) => item.name.trim().toLowerCase()),
+          itemsWithImportedSelected.map((item) =>
+            item.name.trim().toLowerCase(),
+          ),
         )
         const newItems = entries
           .map((entry) => entry.itemName.trim())
@@ -236,9 +246,11 @@ function App() {
           .map((name) => ({
             id: nextItemId.current++,
             name,
-            selected: false,
+            selected: true,
           }))
-        return newItems.length ? [...currentItems, ...newItems] : currentItems
+        return newItems.length
+          ? [...itemsWithImportedSelected, ...newItems]
+          : itemsWithImportedSelected
       })
       setAisleViewScope({
         searchId,

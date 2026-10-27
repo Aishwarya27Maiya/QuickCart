@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Aisle Finder - Walmart aisle helper
 // @namespace    aislefinder.local
-// @version      4.4.4
+// @version      4.4.5
 // @description  Saves Walmart aisle notes to your local Quick Cart.
 // @downloadURL  https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
 // @updateURL    https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
@@ -11,10 +11,13 @@
 // @match        http://127.0.0.1/*
 // @match        https://aishwarya27maiya.github.io/QuickCart/*
 // @run-at       document-idle
+// @inject-into  content
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
-// @grant        GM_addValueChangeListener
+// @grant        GM.setValue
+// @grant        GM.getValue
+// @grant        GM.deleteValue
 // ==/UserScript==
 (() => { "use strict";
 const CHANNEL = "cartpath-browser-v3";
@@ -22,6 +25,21 @@ const JOB_KEY = "cartpath.job";
 const REPORT_KEY = "cartpath.report";
 const MANUAL_KEY = "cartpath.manual-aisles";
 const QUICK_CART_URL = "https://aishwarya27maiya.github.io/QuickCart/";
+const getValue = async (key, fallback) => {
+  if (typeof GM_getValue === "function") return GM_getValue(key, fallback);
+  if (typeof globalThis.GM?.getValue === "function") return globalThis.GM.getValue(key, fallback);
+  throw new Error("This userscript manager does not provide storage read access.");
+};
+const setValue = async (key, value) => {
+  if (typeof GM_setValue === "function") return GM_setValue(key, value);
+  if (typeof globalThis.GM?.setValue === "function") return globalThis.GM.setValue(key, value);
+  throw new Error("This userscript manager does not provide storage write access.");
+};
+const deleteValue = async (key) => {
+  if (typeof GM_deleteValue === "function") return GM_deleteValue(key);
+  if (typeof globalThis.GM?.deleteValue === "function") return globalThis.GM.deleteValue(key);
+  throw new Error("This userscript manager does not provide storage delete access.");
+};
 const isWalmart = ["www.walmart.com", "walmart.com"].includes(location.hostname);
 const isQuickCart =
   (location.protocol === "http:" &&
@@ -124,7 +142,7 @@ function startManual() {
     countLine.textContent = added.length === 0 ? "Nothing added yet." : added.length + " item(s) ready to copy.";
   }
 
-  document.getElementById("af-add").addEventListener("click", function () {
+  document.getElementById("af-add").addEventListener("click", async function () {
     var item = itemInput.value.trim();
     if (!item) {
       statusLine.textContent = "Add an item name first.";
@@ -137,7 +155,7 @@ function startManual() {
       shelf: shelfInput.value.trim(),
     };
     added.push(entry);
-    var queuedEntries = GM_getValue(MANUAL_KEY, []);
+    var queuedEntries = await getValue(MANUAL_KEY, []);
     if (!Array.isArray(queuedEntries)) queuedEntries = [];
     queuedEntries.push({
       id: typeof crypto !== "undefined" && crypto.randomUUID
@@ -146,7 +164,7 @@ function startManual() {
       ...entry,
       createdAt: Date.now(),
     });
-    GM_setValue(MANUAL_KEY, queuedEntries.slice(-500));
+    await setValue(MANUAL_KEY, queuedEntries.slice(-500));
     statusLine.textContent = "Sent to Quick Cart. Items with a valid aisle will appear in Saved aisles; use Copy all for the full helper list.";
     aisleInput.value = "";
     shelfInput.value = "";
@@ -240,7 +258,7 @@ function startManual() {
   const incoming = new URLSearchParams(location.hash.slice(1)).get('cartpath');
   if (incoming) sessionStorage.setItem(JOB_KEY, incoming);
   const requestId = incoming || sessionStorage.getItem(JOB_KEY);
-  let job = GM_getValue(JOB_KEY, null);
+  let job = await getValue(JOB_KEY, null);
   const isActiveJob = (candidate) =>
     candidate?.requestId === requestId &&
     !['done', 'cancelled'].includes(candidate.stage) &&
@@ -249,7 +267,7 @@ function startManual() {
     const waitUntil = Date.now() + 12_000;
     while (Date.now() < waitUntil && !isActiveJob(job)) {
       await new Promise((resolve) => setTimeout(resolve, 250));
-      job = GM_getValue(JOB_KEY, null);
+      job = await getValue(JOB_KEY, null);
     }
   }
   if (!isActiveJob(job)) { startManual(); return; }
@@ -270,8 +288,8 @@ function startManual() {
   returnButton.hidden = true;
   returnButton.onclick = () => { location.href = QUICK_CART_URL; };
   panel.append(title, description, action, returnButton); document.body.append(panel);
-  const report = (status, message) => GM_setValue(REPORT_KEY, { requestId, status, message, results: status === 'done' ? job.results : undefined });
-  const persist = () => GM_setValue(JOB_KEY, job);
+  const report = (status, message) => setValue(REPORT_KEY, { requestId, status, message, results: status === 'done' ? job.results : undefined });
+  const persist = () => setValue(JOB_KEY, job);
   let navigating = false;
   const go = (url) => {
     navigating = true;
@@ -279,43 +297,47 @@ function startManual() {
     if (target.pathname === location.pathname && target.search === location.search) location.reload();
     else location.assign(url);
   };
-  const navigateSearch = () => {
-    job.stage = 'search'; persist();
+  const navigateSearch = async () => {
+    job.stage = 'search'; await persist();
     go('https://www.walmart.com/search?q=' + encodeURIComponent(job.items[job.index].name) + '#cartpath=' + requestId);
   };
-  const finishItem = (details) => {
+  const finishItem = async (details) => {
     job.results.push({ item_id: job.items[job.index].id, aisle: null, product_name: '', product_url: '', reason: 'not_displayed', ...details });
     job.index += 1;
     if (job.index === job.items.length) {
-      job.stage = 'done'; persist(); report('done', 'Search finished. Results were sent to your checklist.');
+      job.stage = 'done'; await persist(); await report('done', 'Search finished. Results were sent to your checklist.');
       description.textContent = 'Finished — return to Quick Cart to see the results.'; action.hidden = true; returnButton.hidden = false;
-    } else navigateSearch();
+    } else await navigateSearch();
   };
   let startedAt = Date.now(), openedLocation = false, paused = false;
-  action.onclick = () => {
-    if (job.stage === 'confirm') { navigateSearch(); return; }
+  action.onclick = async () => {
+    if (job.stage === 'confirm') { await navigateSearch(); return; }
     paused = false; startedAt = Date.now(); action.hidden = true;
   };
   if (job.stage === 'confirm') {
     description.textContent = 'Sign in on Walmart and select ' + job.store.name + ', ' + (job.store.address || '') + '. This search uses Walmart’s selected store. Confirm it matches before starting.';
   } else action.hidden = true;
-  const timer = setInterval(() => {
+  let checking = false;
+  const timer = setInterval(async () => {
+    if (checking) return;
+    checking = true;
+    try {
     if (job.stage === 'done') { clearInterval(timer); return; }
-    const current = GM_getValue(JOB_KEY, null);
+    const current = await getValue(JOB_KEY, null);
     if (current?.requestId !== requestId || current.stage === 'cancelled') {
       clearInterval(timer); description.textContent = 'Search stopped. Return to your checklist to start again.'; action.hidden = true; return;
     }
     if (job.expiresAt < Date.now()) {
       clearInterval(timer);
       description.textContent = 'This search expired. Return to Quick Cart and start again.';
-      report('error', 'The Walmart search expired before it finished. Start again from Quick Cart.');
+      await report('error', 'The Walmart search expired before it finished. Start again from Quick Cart.');
       return;
     }
     if (navigating || job.stage === 'confirm' || paused) return;
     if (blocked()) {
       paused = true; action.textContent = 'Continue after signing in or verification'; action.hidden = false;
       description.textContent = 'Walmart needs your attention. Complete its sign-in or verification yourself, then continue.';
-      report('progress', 'Walmart needs sign-in or verification. Continue in the Walmart tab.'); return;
+      await report('progress', 'Walmart needs sign-in or verification. Continue in the Walmart tab.'); return;
     }
     const item = job.items[job.index];
     description.textContent = 'Searching ' + (job.index + 1) + ' of ' + job.items.length + ': ' + item.name;
@@ -323,16 +345,23 @@ function startManual() {
     if (job.stage === 'search') {
       const link = productLink(item.name);
       if (link) {
-        job.stage = 'product'; persist();
-        report('progress', 'Checking ' + (job.index + 1) + ' of ' + job.items.length + ': ' + item.name);
+        job.stage = 'product'; await persist();
+        await report('progress', 'Checking ' + (job.index + 1) + ' of ' + job.items.length + ': ' + item.name);
         go(new URL(link.href).origin + new URL(link.href).pathname + '#cartpath=' + requestId); return;
       }
-      if (Date.now() - startedAt > 20000) finishItem({ reason: 'no_match' });
+      if (Date.now() - startedAt > 20000) await finishItem({ reason: 'no_match' });
     } else if (job.stage === 'product') {
       const found = productAisle();
-      if (found) { finishItem({ ...found, reason: 'found' }); return; }
+      if (found) { await finishItem({ ...found, reason: 'found' }); return; }
       if (!openedLocation) { openStoreLocation(); openedLocation = true; }
-      if (Date.now() - startedAt > 20000) finishItem({ reason: 'not_displayed', product_name: (document.querySelector('h1')?.innerText || '').slice(0, 240), product_url: location.pathname.startsWith('/ip/') ? location.origin + location.pathname : '' });
+      if (Date.now() - startedAt > 20000) await finishItem({ reason: 'not_displayed', product_name: (document.querySelector('h1')?.innerText || '').slice(0, 240), product_url: location.pathname.startsWith('/ip/') ? location.origin + location.pathname : '' });
+    }
+    } catch (error) {
+      console.error("Quick Cart aisle helper storage error:", error);
+      description.textContent = "The userscript manager could not access shared storage. Check its permissions and reload.";
+      clearInterval(timer);
+    } finally {
+      checking = false;
     }
   }, 1000);
   })();
@@ -343,37 +372,44 @@ function startManual() {
   document.documentElement.setAttribute('data-cartpath-helper', '4');
   if (!isQuickCart) return;
   const announce = (message) => window.postMessage({ channel: CHANNEL, ...message }, location.origin);
-  const forwardManual = () => {
-    const entries = GM_getValue(MANUAL_KEY, []);
+  const forwardManual = async () => {
+    const entries = await getValue(MANUAL_KEY, []);
     if (Array.isArray(entries) && entries.length) {
       announce({ type: 'manual_entries', entries });
     }
   };
-  const forward = () => {
-    const report = GM_getValue(REPORT_KEY, null);
+  const forward = async () => {
+    const report = await getValue(REPORT_KEY, null);
     if (report && report.requestId === pendingId) announce({ type: 'report', report });
   };
-  GM_addValueChangeListener(REPORT_KEY, forward);
-  GM_addValueChangeListener(MANUAL_KEY, forwardManual);
-  window.addEventListener('message', (event) => {
+  const pollTimer = setInterval(async () => {
+    try {
+      await forward();
+      await forwardManual();
+    } catch (error) {
+      console.error("Quick Cart aisle helper storage error:", error);
+      clearInterval(pollTimer);
+    }
+  }, 1000);
+  window.addEventListener('message', async (event) => {
     if (event.origin !== location.origin || event.data?.channel !== CHANNEL) return;
     if (!document.documentElement.hasAttribute('data-cartpath-app')) return;
     const message = event.data;
-    if (message.type === 'manual_pull') { forwardManual(); return; }
+    if (message.type === 'manual_pull') { await forwardManual(); return; }
     if (message.type === 'manual_ack' && Array.isArray(message.recordIds)) {
       const acknowledged = new Set(message.recordIds);
-      const entries = GM_getValue(MANUAL_KEY, []);
+      const entries = await getValue(MANUAL_KEY, []);
       if (Array.isArray(entries)) {
-        GM_setValue(MANUAL_KEY, entries.filter((entry) => !acknowledged.has(entry.id)));
+        await setValue(MANUAL_KEY, entries.filter((entry) => !acknowledged.has(entry.id)));
       }
       return;
     }
     if (message.type === 'ping') { announce({ type: 'ready', version: 4, requestId: message.requestId }); return; }
     if (['cancel', 'ack'].includes(message.type) && message.requestId === pendingId) {
-      const job = GM_getValue(JOB_KEY, null);
-      if (job?.requestId === pendingId) GM_deleteValue(JOB_KEY);
+      const job = await getValue(JOB_KEY, null);
+      if (job?.requestId === pendingId) await deleteValue(JOB_KEY);
       pendingId = null;
-      GM_deleteValue(REPORT_KEY);
+      await deleteValue(REPORT_KEY);
       return;
     }
     if (message.type !== 'start') return;
@@ -382,10 +418,10 @@ function startManual() {
     if (!input.store?.id || input.items.some((item) => !Number.isInteger(item.id) || typeof item.name !== 'string' || item.name.length > 120)) return;
     pendingId = input.requestId;
     const job = { ...input, index: 0, results: [], stage: 'confirm', expiresAt: Date.now() + 30 * 60 * 1000 };
-    GM_deleteValue(REPORT_KEY);
-    GM_setValue(JOB_KEY, job);
-    GM_setValue(REPORT_KEY, { requestId: pendingId, status: 'progress', message: 'In the Walmart tab, sign in and confirm the store, then start the search.' });
-    forward();
+    await deleteValue(REPORT_KEY);
+    await setValue(JOB_KEY, job);
+    await setValue(REPORT_KEY, { requestId: pendingId, status: 'progress', message: 'In the Walmart tab, sign in and confirm the store, then start the search.' });
+    await forward();
   });
 
 }

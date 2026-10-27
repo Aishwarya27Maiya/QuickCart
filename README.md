@@ -45,7 +45,7 @@ it does not automatically sync between a computer and phone.
 
 ## Optional Walmart aisle helper
 
-The optional Tampermonkey helper can pass aisle details it can actually read
+The optional userscript helper can pass aisle details it can actually read
 from Walmart product pages back to Quick Cart. Install the helper from
 `https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js` in a
 userscript-compatible browser, then open Quick Cart on that device. For local
@@ -53,23 +53,29 @@ development, the helper also supports `http://localhost:<Vite port>` and
 `http://127.0.0.1:<Vite port>`. It runs only on Walmart and these explicit
 Quick Cart origins.
 
-Mobile userscript support depends on the phone and browser. iPhone users need a
-Safari browser extension that supports userscripts; Android support varies by
-browser. Quick Cart itself works in a mobile browser without the helper, but
-automatic aisle lookup requires it.
+Mobile userscript support depends on the phone and browser. On iPhone, the
+free Userscripts Safari extension is supported by helper version 4.4.5 and
+later; enable it for Walmart and Quick Cart in Safari settings. On Android, use
+a browser that supports userscripts; the standard Chrome for Android app does
+not run userscript extensions. Quick Cart itself works in a mobile browser
+without the helper, but automatic aisle lookup requires it.
 
 Select grocery items to show them in the Shopping Guide. Use the search icon
 beside an item to look up that item's aisle. Aisle details remain hidden until
-the helper returns a verified aisle. With Tampermonkey enabled, Quick Cart
+the helper returns a verified aisle. With the userscript enabled, Quick Cart
 opens a separate browser tab through a Quick Cart handoff page, then opens the
 Walmart website while keeping Quick Cart in its own tab. On iPhone, the handoff
-starts at Walmart's Safari-only store-finder route before the helper continues
-to the search, to avoid opening the Walmart app. iOS controls app-link behavior,
-so use Safari's website option if it still switches to the app. Sign in, confirm
-the store, and start the search in the Walmart tab when prompted. After an aisle
-search finishes, tap **Return to Quick Cart** in the helper panel. The helper
-does not read or send passwords, cookies, or account credentials. Aisle details
-are saved in this browser and associated with the selected store and grocery item.
+starts at Walmart's store-finder route before the helper continues to the
+search, to give the userscript an opportunity to start before Walmart opens the
+item search. If Android opens the Walmart app instead, go to
+**Settings > Apps > Walmart > Open by default** and turn off **Open supported
+links**, then retry in your userscript-compatible browser. Android settings
+labels vary by device; Quick Cart cannot override the operating system's
+app-link choice. Sign in, confirm the store, and start the search in the Walmart
+tab when prompted. After an aisle search finishes, tap **Return to Quick Cart**
+in the helper panel. The helper does not read or send passwords, cookies, or
+account credentials. Aisle details are saved in this browser and associated
+with the selected store and grocery item.
 The helper is best-effort and can stop working if Walmart changes its page.
 
 Saved aisle notes remain in browser storage even if the corresponding
@@ -91,6 +97,7 @@ store is selected remain queued until you choose one. **Copy all** remains
 available for copying the helper's full list.
 
 The helper timestamps queued notes. Quick Cart ignores notes queued before the
-current page session, so stale Tampermonkey entries cannot appear as results
-from a new search. Update the helper to version 4.4.4 for this protection; if an
-older queued note is needed, add it again with the updated helper.
+current page session, so stale helper entries cannot appear as results from a
+new search. Update the helper to version 4.4.5 or later for this protection and
+compatibility with the free Userscripts Safari extension; if an older queued
+note is needed, add it again with the updated helper.

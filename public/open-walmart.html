@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex" />
-    <title>Opening Walmart in Safari — Quick Cart</title>
+    <title>Opening Walmart — Quick Cart</title>
     <style>
       body {
         margin: 0;
@@ -29,14 +29,20 @@
   </head>
   <body>
     <main>
-      <h1>Opening Walmart’s website…</h1>
-      <p>
-        Quick Cart is opening Walmart in Safari so the aisle helper can run.
-        Quick Cart will remain open in its own tab.
+      <h1 id="heading">Opening Walmart’s website…</h1>
+      <p id="message">
+        Quick Cart is opening Walmart in your browser so the aisle helper can
+        run. Quick Cart will remain open in its own tab.
       </p>
       <p id="fallback" hidden>
         If it doesn’t open automatically, continue with this
         <a id="walmart-link" rel="noreferrer">Walmart search link</a>.
+      </p>
+      <p id="android-help" hidden>
+        If the Walmart app opens instead, open Android Settings, go to
+        <strong>Apps → Walmart → Open by default</strong>, and turn off
+        <strong>Open supported links</strong>. Then return to Quick Cart and try
+        again in a browser that supports userscripts.
       </p>
     </main>
     <script>
@@ -44,10 +50,12 @@
       const searchTerm = parameters.get('q')
       const requestId = parameters.get('requestId')
       const validRequestId = /^[a-f0-9-]{36}$/.test(requestId || '')
+      const isAndroid = /Android/i.test(navigator.userAgent)
+      const isIos = /iPad|iPhone|iPod/i.test(navigator.userAgent)
+      const walmartPath =
+        validRequestId && (isIos || isAndroid) ? '/store-finder' : '/search'
       const walmartUrl = new URL(
-        validRequestId
-          ? 'https://www.walmart.com/store-finder'
-          : 'https://www.walmart.com/search',
+        `https://www.walmart.com${walmartPath}`,
       )
 
       if (searchTerm && searchTerm.length <= 120) {
@@ -55,11 +63,18 @@
         if (validRequestId) walmartUrl.hash = `cartpath=${requestId}`
         document.getElementById('walmart-link').href = walmartUrl.href
         document.getElementById('fallback').hidden = false
+        if (isAndroid) {
+          document.getElementById('heading').textContent =
+            'Opening Walmart in your Android browser…'
+          document.getElementById('message').textContent =
+            'Quick Cart is opening the Walmart website. Keep Quick Cart open in its tab while you search.'
+          document.getElementById('android-help').hidden = false
+        }
         window.setTimeout(() => location.replace(walmartUrl.href), 800)
       } else {
-        document.querySelector('h1').textContent =
+        document.getElementById('heading').textContent =
           'Could not open the Walmart search'
-        document.querySelector('main > p').textContent =
+        document.getElementById('message').textContent =
           'Return to Quick Cart and try searching for the item again.'
       }
     </script>

@@ -76,7 +76,7 @@ function AisleSearch({
         }
         if (entries.length && !freshEntries.length) {
           setHelperMessage(
-            'Ignored old queued aisle notes from before this Quick Cart session. Add them again with the updated Tampermonkey helper.',
+            'Ignored old queued aisle notes from before this Quick Cart session. Add them again with the updated aisle helper.',
           )
         }
 
@@ -118,11 +118,11 @@ function AisleSearch({
           setHelperMessage(
             `Saved ${validEntries.length} aisle ${
               validEntries.length === 1 ? 'note' : 'notes'
-            } from Tampermonkey. Check the Saved aisles tab.`,
+            } from the aisle helper. Check the Saved aisles tab.`,
           )
         } else if (freshEntries.length) {
           setHelperMessage(
-            'No valid aisle details found in the Tampermonkey list. Check that each item has an aisle.',
+            'No valid aisle details found in the helper list. Check that each item has an aisle.',
           )
         }
         window.postMessage(
@@ -264,7 +264,7 @@ function AisleSearch({
       if (attempts >= 10) {
         window.clearInterval(retryTimer)
         setHelperMessage(
-          'Aisle helper not detected. Install or enable the Quick Cart Tampermonkey script, then refresh.',
+          'Aisle helper not detected. Install or enable the Quick Cart userscript in your browser, then refresh.',
         )
       }
     }

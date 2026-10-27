@@ -64,10 +64,9 @@ Select grocery items to show them in the Shopping Guide. Use the search icon
 beside an item to look up that item's aisle. Aisle details remain hidden until
 the helper returns a verified aisle. With the userscript enabled, Quick Cart
 opens a separate browser tab through a Quick Cart handoff page, then opens the
-Walmart website while keeping Quick Cart in its own tab. On iPhone, the handoff
-starts at Walmart's store-finder route before the helper continues to the
-search, to give the userscript an opportunity to start before Walmart opens the
-item search. If Android opens the Walmart app instead, go to
+Walmart search page while keeping Quick Cart in its own tab. The selected
+search term and request ID are passed to Walmart so the helper can continue the
+aisle search from the results page. If Android opens the Walmart app instead, go to
 **Settings > Apps > Walmart > Open by default** and turn off **Open supported
 links**, then retry in your userscript-compatible browser. Android settings
 labels vary by device; Quick Cart cannot override the operating system's

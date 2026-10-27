@@ -51,12 +51,7 @@
       const requestId = parameters.get('requestId')
       const validRequestId = /^[a-f0-9-]{36}$/.test(requestId || '')
       const isAndroid = /Android/i.test(navigator.userAgent)
-      const isIos = /iPad|iPhone|iPod/i.test(navigator.userAgent)
-      const walmartPath =
-        validRequestId && (isIos || isAndroid) ? '/store-finder' : '/search'
-      const walmartUrl = new URL(
-        `https://www.walmart.com${walmartPath}`,
-      )
+      const walmartUrl = new URL('https://www.walmart.com/search')
 
       if (searchTerm && searchTerm.length <= 120) {
         walmartUrl.searchParams.set('q', searchTerm)

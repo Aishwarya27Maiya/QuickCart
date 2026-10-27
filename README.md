@@ -88,5 +88,5 @@ available for copying the helper's full list.
 
 The helper timestamps queued notes. Quick Cart ignores notes queued before the
 current page session, so stale Tampermonkey entries cannot appear as results
-from a new search. Update the helper to version 4.4.2 for this protection; if an
+from a new search. Update the helper to version 4.4.3 for this protection; if an
 older queued note is needed, add it again with the updated helper.

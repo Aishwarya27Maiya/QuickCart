@@ -25,7 +25,6 @@ function AisleSearch({
   const activeItems = useRef([])
   const manualQueueAcceptAfter = useRef(null)
   const activeStoreId = useRef(null)
-  const pendingWalmartTab = useRef(null)
   const currentStoreId = useRef(store?.id)
   const currentItems = useRef(items)
   const selectedItems = items.filter((item) => item.selected)
@@ -143,21 +142,6 @@ function AisleSearch({
         report.requestId !== activeRequestId.current
       ) {
         return
-      }
-
-      const pendingTab = pendingWalmartTab.current
-      if (pendingTab?.requestId === report.requestId) {
-        window.clearTimeout(pendingTab.timeout)
-        pendingWalmartTab.current = null
-        try {
-          if (!pendingTab.tab.closed) {
-            pendingTab.tab.location.href = pendingTab.url
-          }
-        } catch {
-          setHelperMessage(
-            'Could not open Walmart in a new tab. Allow pop-ups for Quick Cart and try again.',
-          )
-        }
       }
 
       setHelperMessage(report.message || 'Walmart aisle search updated.')
@@ -297,12 +281,6 @@ function AisleSearch({
         activeRequestId.current = null
         activeStoreId.current = null
       }
-      const pendingTab = pendingWalmartTab.current
-      if (pendingTab) {
-        window.clearTimeout(pendingTab.timeout)
-        if (!pendingTab.tab.closed) pendingTab.tab.close()
-        pendingWalmartTab.current = null
-      }
     }
   }, [
     onAisleDetailsFound,
@@ -333,7 +311,10 @@ function AisleSearch({
         return
       }
 
-      const walmartTab = window.open('about:blank', '_blank')
+      const requestId = createRequestId()
+      const searchItems = [{ id: item.id, name: item.name }]
+      const walmartUrl = `${walmartSearchUrl}#cartpath=${requestId}`
+      const walmartTab = window.open(walmartUrl, '_blank')
       if (!walmartTab) {
         setHelperMessage(
           'Your browser blocked the Walmart tab. Allow pop-ups for Quick Cart and try again.',
@@ -341,9 +322,6 @@ function AisleSearch({
         return
       }
 
-      const requestId = createRequestId()
-      const searchItems = [{ id: item.id, name: item.name }]
-      const walmartUrl = `${walmartSearchUrl}#cartpath=${requestId}`
       onSearchStarted({
         searchId: requestId,
         storeId: store.id,
@@ -353,26 +331,6 @@ function AisleSearch({
       activeRequestId.current = requestId
       activeItems.current = searchItems
       activeStoreId.current = store.id
-      const timeout = window.setTimeout(() => {
-        const pendingTab = pendingWalmartTab.current
-        if (pendingTab?.requestId !== requestId) return
-        pendingWalmartTab.current = null
-        try {
-          if (!pendingTab.tab.closed) {
-            pendingTab.tab.location.href = pendingTab.url
-          }
-        } catch {
-          setHelperMessage(
-            'Could not open Walmart in a new tab. Allow pop-ups for Quick Cart and try again.',
-          )
-        }
-      }, 5_000)
-      pendingWalmartTab.current = {
-        requestId,
-        tab: walmartTab,
-        url: walmartUrl,
-        timeout,
-      }
       setHelperMessage(
         'Walmart opened in a new tab. Sign in, confirm the selected store, and start the search there.',
       )
@@ -393,12 +351,6 @@ function AisleSearch({
         window.location.origin,
       )
     } catch (error) {
-      const pendingTab = pendingWalmartTab.current
-      if (pendingTab) {
-        window.clearTimeout(pendingTab.timeout)
-        if (!pendingTab.tab.closed) pendingTab.tab.close()
-        pendingWalmartTab.current = null
-      }
       setHelperMessage(
         error instanceof Error
           ? error.message

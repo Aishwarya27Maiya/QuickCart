@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Aisle Finder - Walmart aisle helper
 // @namespace    aislefinder.local
-// @version      4.4.2
+// @version      4.4.3
 // @description  Saves Walmart aisle notes to your local Quick Cart.
 // @downloadURL  https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
 // @updateURL    https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
@@ -231,11 +231,23 @@ function startManual() {
   }
 
 
+  (async () => {
   const incoming = new URLSearchParams(location.hash.slice(1)).get('cartpath');
   if (incoming) sessionStorage.setItem(JOB_KEY, incoming);
   const requestId = incoming || sessionStorage.getItem(JOB_KEY);
   let job = GM_getValue(JOB_KEY, null);
-  if (!job || job.requestId !== requestId || ['done', 'cancelled'].includes(job.stage) || job.expiresAt < Date.now()) { startManual(); return; }
+  const isActiveJob = (candidate) =>
+    candidate?.requestId === requestId &&
+    !['done', 'cancelled'].includes(candidate.stage) &&
+    candidate.expiresAt >= Date.now();
+  if (incoming && !isActiveJob(job)) {
+    const waitUntil = Date.now() + 12_000;
+    while (Date.now() < waitUntil && !isActiveJob(job)) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      job = GM_getValue(JOB_KEY, null);
+    }
+  }
+  if (!isActiveJob(job)) { startManual(); return; }
   document.getElementById('af-panel')?.remove();
   const panel = document.createElement('section');
   panel.id = 'cartpath-auto';
@@ -312,6 +324,7 @@ function startManual() {
       if (Date.now() - startedAt > 20000) finishItem({ reason: 'not_displayed', product_name: (document.querySelector('h1')?.innerText || '').slice(0, 240), product_url: location.pathname.startsWith('/ip/') ? location.origin + location.pathname : '' });
     }
   }, 1000);
+  })();
 
 } else {
 

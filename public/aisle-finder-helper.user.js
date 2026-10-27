@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Aisle Finder - Walmart aisle helper
 // @namespace    aislefinder.local
-// @version      4.4.8
+// @version      4.4.9
 // @description  Saves Walmart aisle notes to your local Quick Cart.
 // @downloadURL  https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
 // @updateURL    https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
@@ -25,18 +25,36 @@ const JOB_KEY = "cartpath.job";
 const REPORT_KEY = "cartpath.report";
 const MANUAL_KEY = "cartpath.manual-aisles";
 const QUICK_CART_URL = "https://aishwarya27maiya.github.io/QuickCart/";
+const userscriptGM = () => globalThis["GM"];
+const storageErrorMessage = (error) =>
+  error instanceof Error ? error.message : String(error);
 const getValue = async (key, fallback) => {
-  if (typeof globalThis.GM?.getValue === "function") return globalThis.GM.getValue(key, fallback);
+  const api = userscriptGM();
+  if (typeof api?.getValue === "function") return api.getValue(key, fallback);
   if (typeof GM_getValue === "function") return GM_getValue(key, fallback);
-  throw new Error("This userscript manager does not provide storage read access.");
+  throw new Error(
+    "GM.getValue is unavailable (GM=" +
+      (api ? "present, getValue missing" : "missing") +
+      "; GM_getValue=" +
+      (typeof GM_getValue === "function" ? "present" : "missing") +
+      "). Check Userscripts grants and site access.",
+  );
 };
 const setValue = async (key, value) => {
-  if (typeof globalThis.GM?.setValue === "function") return globalThis.GM.setValue(key, value);
+  const api = userscriptGM();
+  if (typeof api?.setValue === "function") return api.setValue(key, value);
   if (typeof GM_setValue === "function") return GM_setValue(key, value);
-  throw new Error("This userscript manager does not provide storage write access.");
+  throw new Error(
+    "GM.setValue is unavailable (GM=" +
+      (api ? "present, setValue missing" : "missing") +
+      "; GM_setValue=" +
+      (typeof GM_setValue === "function" ? "present" : "missing") +
+      "). Check Userscripts grants and site access.",
+  );
 };
 const deleteValue = async (key) => {
-  if (typeof globalThis.GM?.deleteValue === "function") return globalThis.GM.deleteValue(key);
+  const api = userscriptGM();
+  if (typeof api?.deleteValue === "function") return api.deleteValue(key);
   if (typeof GM_deleteValue === "function") return GM_deleteValue(key);
   throw new Error("This userscript manager does not provide storage delete access.");
 };
@@ -200,8 +218,7 @@ return (function () {
     } catch (error) {
       console.error("Quick Cart aisle helper storage error:", error);
       statusLine.textContent =
-        "Could not send this item to Quick Cart: " +
-        (error instanceof Error ? error.message : String(error));
+        "Could not send this item to Quick Cart: " + storageErrorMessage(error);
     }
   });
 
@@ -399,7 +416,8 @@ return (function () {
     }
     } catch (error) {
       console.error("Quick Cart aisle helper storage error:", error);
-      description.textContent = "The userscript manager could not access shared storage. Check its permissions and reload.";
+      description.textContent =
+        "Userscripts storage failed: " + storageErrorMessage(error);
       clearInterval(timer);
     } finally {
       checking = false;
@@ -409,7 +427,7 @@ return (function () {
     console.error("Quick Cart aisle helper startup error:", error);
     if (manualStatus) {
       manualStatus.textContent =
-        "The helper loaded, but Userscripts storage could not be read. Check the extension permissions and reload.";
+        "Userscripts storage failed: " + storageErrorMessage(error);
     }
   });
 

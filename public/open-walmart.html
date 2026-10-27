@@ -29,10 +29,13 @@
   </head>
   <body>
     <main>
-      <h1>Opening Walmart in Safari…</h1>
-      <p>Quick Cart will remain open in its own tab.</p>
+      <h1>Opening Walmart’s website…</h1>
+      <p>
+        Quick Cart is opening Walmart in Safari so the aisle helper can run.
+        Quick Cart will remain open in its own tab.
+      </p>
       <p id="fallback" hidden>
-        If the page doesn’t open, use this
+        If it doesn’t open automatically, continue with this
         <a id="walmart-link" rel="noreferrer">Walmart search link</a>.
       </p>
     </main>
@@ -40,8 +43,12 @@
       const parameters = new URLSearchParams(location.search)
       const searchTerm = parameters.get('q')
       const requestId = parameters.get('requestId')
-      const walmartUrl = new URL('https://www.walmart.com/search')
       const validRequestId = /^[a-f0-9-]{36}$/.test(requestId || '')
+      const walmartUrl = new URL(
+        validRequestId
+          ? 'https://www.walmart.com/store-finder'
+          : 'https://www.walmart.com/search',
+      )
 
       if (searchTerm && searchTerm.length <= 120) {
         walmartUrl.searchParams.set('q', searchTerm)

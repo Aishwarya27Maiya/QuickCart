@@ -62,13 +62,14 @@ Select grocery items to show them in the Shopping Guide. Use the search icon
 beside an item to look up that item's aisle. Aisle details remain hidden until
 the helper returns a verified aisle. With Tampermonkey enabled, Quick Cart
 opens a separate browser tab through a Quick Cart handoff page, then opens the
-Walmart search while keeping Quick Cart in its own tab. On iPhone, iOS may still
-hand Walmart links to the Walmart app; use Safari's website option or
-temporarily remove the Walmart app if that happens. Sign in, confirm the store,
-and start the search in the Walmart tab when prompted. After an aisle search
-finishes, tap **Return to Quick Cart** in the helper panel. The helper does not
-read or send passwords, cookies, or account credentials. Aisle details are
-saved in this browser and associated with the selected store and grocery item.
+Walmart website while keeping Quick Cart in its own tab. On iPhone, the handoff
+starts at Walmart's Safari-only store-finder route before the helper continues
+to the search, to avoid opening the Walmart app. iOS controls app-link behavior,
+so use Safari's website option if it still switches to the app. Sign in, confirm
+the store, and start the search in the Walmart tab when prompted. After an aisle
+search finishes, tap **Return to Quick Cart** in the helper panel. The helper
+does not read or send passwords, cookies, or account credentials. Aisle details
+are saved in this browser and associated with the selected store and grocery item.
 The helper is best-effort and can stop working if Walmart changes its page.
 
 Saved aisle notes remain in browser storage even if the corresponding

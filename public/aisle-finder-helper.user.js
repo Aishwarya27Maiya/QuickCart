@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Aisle Finder - Walmart aisle helper
 // @namespace    aislefinder.local
-// @version      4.4.1
+// @version      4.4.2
 // @description  Saves Walmart aisle notes to your local Quick Cart.
 // @downloadURL  https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
 // @updateURL    https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
@@ -15,7 +15,6 @@
 // @grant        GM_getValue
 // @grant        GM_deleteValue
 // @grant        GM_addValueChangeListener
-// @grant        GM_openInTab
 // ==/UserScript==
 (() => { "use strict";
 const CHANNEL = "cartpath-browser-v3";
@@ -363,15 +362,6 @@ function startManual() {
     GM_setValue(JOB_KEY, job);
     GM_setValue(REPORT_KEY, { requestId: pendingId, status: 'progress', message: 'In the Walmart tab, sign in and confirm the store, then start the search.' });
     forward();
-    const tab = GM_openInTab('https://www.walmart.com/search?q=' + encodeURIComponent(input.items[0].name) + '#cartpath=' + pendingId, { active: true, insert: true });
-    if (!tab) {
-      GM_setValue(REPORT_KEY, { requestId: pendingId, status: 'error', message: 'Tampermonkey could not open a Walmart tab. Check its permissions and try again.' });
-    } else tab.onclose = () => {
-      const current = GM_getValue(JOB_KEY, null);
-      if (current?.requestId === pendingId && !['done', 'cancelled'].includes(current.stage)) {
-        GM_setValue(REPORT_KEY, { requestId: pendingId, status: 'error', message: 'The Walmart tab was closed before the search finished. Try again.' });
-      }
-    };
   });
 
 }

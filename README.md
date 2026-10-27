@@ -61,9 +61,10 @@ automatic aisle lookup requires it.
 Select grocery items to show them in the Shopping Guide. Use the search icon
 beside an item to look up that item's aisle. Aisle details remain hidden until
 the helper returns a verified aisle. With Tampermonkey enabled, Quick Cart
-opens a Walmart search tab for that item. Sign in, confirm the store, and start
-the search in that tab when prompted. The helper does not read or send
-passwords, cookies, or account credentials. Aisle details are saved in this
+opens a separate Walmart tab and keeps Quick Cart open in its own tab. Sign in,
+confirm the store, and start the search in the Walmart tab when prompted. The
+helper does not read or send passwords, cookies, or account credentials. Aisle
+details are saved in this
 browser and associated with the selected store and grocery item. The helper is
 best-effort and can stop working if Walmart changes its page.
 
@@ -87,5 +88,5 @@ available for copying the helper's full list.
 
 The helper timestamps queued notes. Quick Cart ignores notes queued before the
 current page session, so stale Tampermonkey entries cannot appear as results
-from a new search. Update the helper to version 4.3.0 for this protection; if an
+from a new search. Update the helper to version 4.4.2 for this protection; if an
 older queued note is needed, add it again with the updated helper.

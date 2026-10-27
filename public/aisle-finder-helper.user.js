@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Aisle Finder - Walmart aisle helper
 // @namespace    aislefinder.local
-// @version      4.4.5
+// @version      4.4.6
 // @description  Saves Walmart aisle notes to your local Quick Cart.
 // @downloadURL  https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
 // @updateURL    https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
@@ -49,9 +49,11 @@ const isQuickCart =
     location.pathname.startsWith("/QuickCart/"));
 if (isWalmart) {
 function startManual() {
-(function () {
+return (function () {
   "use strict";
-  if (document.getElementById("af-panel")) return;
+  if (document.getElementById("af-panel")) {
+    return document.getElementById("af-status");
+  }
 
   var AISLE_RE = /\baisle[s]?\s*[:#-]?\s*([A-Z]{0,2}-?\s?\d{1,3}[A-Z]?)\b/i;
   var SECTION_RE = /\b(dairy|produce|bakery|frozen|grocery|meat|seafood|deli|health|beauty|pharmacy|pets|baby|toys|electronics|sporting goods|household|paper goods|cleaning|beverages|snacks|cereal|international|garden|automotive|apparel)\b/i;
@@ -155,20 +157,25 @@ function startManual() {
       shelf: shelfInput.value.trim(),
     };
     added.push(entry);
-    var queuedEntries = await getValue(MANUAL_KEY, []);
-    if (!Array.isArray(queuedEntries)) queuedEntries = [];
-    queuedEntries.push({
-      id: typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : Date.now() + "-" + Math.random().toString(36).slice(2),
-      ...entry,
-      createdAt: Date.now(),
-    });
-    await setValue(MANUAL_KEY, queuedEntries.slice(-500));
-    statusLine.textContent = "Sent to Quick Cart. Items with a valid aisle will appear in Saved aisles; use Copy all for the full helper list.";
-    aisleInput.value = "";
-    shelfInput.value = "";
-    renderCount();
+    try {
+      var queuedEntries = await getValue(MANUAL_KEY, []);
+      if (!Array.isArray(queuedEntries)) queuedEntries = [];
+      queuedEntries.push({
+        id: typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : Date.now() + "-" + Math.random().toString(36).slice(2),
+        ...entry,
+        createdAt: Date.now(),
+      });
+      await setValue(MANUAL_KEY, queuedEntries.slice(-500));
+      statusLine.textContent = "Sent to Quick Cart. Items with a valid aisle will appear in Saved aisles; use Copy all for the full helper list.";
+      aisleInput.value = "";
+      shelfInput.value = "";
+      renderCount();
+    } catch (error) {
+      console.error("Quick Cart aisle helper storage error:", error);
+      statusLine.textContent = "The helper is visible, but Userscripts storage is unavailable. Check Userscripts permissions.";
+    }
   });
 
   document.getElementById("af-copy").addEventListener("click", function () {
@@ -212,6 +219,7 @@ function startManual() {
 
   prefill();
   renderCount();
+  return statusLine;
 })();
 
 }
@@ -254,6 +262,7 @@ function startManual() {
   }
 
 
+  const manualStatus = startManual();
   (async () => {
   const incoming = new URLSearchParams(location.hash.slice(1)).get('cartpath');
   if (incoming) sessionStorage.setItem(JOB_KEY, incoming);
@@ -270,7 +279,7 @@ function startManual() {
       job = await getValue(JOB_KEY, null);
     }
   }
-  if (!isActiveJob(job)) { startManual(); return; }
+  if (!isActiveJob(job)) return;
   document.getElementById('af-panel')?.remove();
   const panel = document.createElement('section');
   panel.id = 'cartpath-auto';
@@ -364,7 +373,13 @@ function startManual() {
       checking = false;
     }
   }, 1000);
-  })();
+  })().catch((error) => {
+    console.error("Quick Cart aisle helper startup error:", error);
+    if (manualStatus) {
+      manualStatus.textContent =
+        "The helper loaded, but Userscripts storage could not be read. Check the extension permissions and reload.";
+    }
+  });
 
 } else {
 

@@ -315,7 +315,7 @@ function AisleSearch({
         )
         if (walmartTab) walmartTab.opener = null
         setHelperMessage(
-          'Opened Walmart search. The aisle helper is not connected, so aisle details will not return automatically.',
+          'Opening Walmart search. Your browser may use another tab or replace the current view. The aisle helper is not connected, so aisle details will not return automatically.',
         )
         return
       }
@@ -335,7 +335,7 @@ function AisleSearch({
       activeItems.current = searchItems
       activeStoreId.current = store.id
       setHelperMessage(
-        'Walmart opened in a new tab. Sign in, confirm the selected store, and start the search there.',
+        'Opening Walmart search. Your browser may use another tab or replace the current view. Sign in, confirm the selected store, and start the search.',
       )
       window.postMessage(
         {

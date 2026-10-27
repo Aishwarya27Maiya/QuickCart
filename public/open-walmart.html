@@ -32,7 +32,7 @@
       <h1 id="heading">Opening Walmart’s website…</h1>
       <p id="message">
         Quick Cart is opening Walmart in your browser so the aisle helper can
-        run. Quick Cart will remain open in its own tab.
+        run. Your browser may open another tab or replace the current view.
       </p>
       <p id="fallback" hidden>
         If it doesn’t open automatically, continue with this
@@ -62,7 +62,7 @@
           document.getElementById('heading').textContent =
             'Opening Walmart in your Android browser…'
           document.getElementById('message').textContent =
-            'Quick Cart is opening the Walmart website. Keep Quick Cart open in its tab while you search.'
+            'Quick Cart is opening the Walmart website. Your browser may open another tab or replace the current view.'
           document.getElementById('android-help').hidden = false
         }
         window.setTimeout(() => location.replace(walmartUrl.href), 800)

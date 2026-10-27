@@ -53,28 +53,32 @@ development, the helper also supports `http://localhost:<Vite port>` and
 `http://127.0.0.1:<Vite port>`. It runs only on Walmart and these explicit
 Quick Cart origins.
 
-Mobile userscript support depends on the phone and browser. On iPhone, the
-free Userscripts Safari extension is supported by helper version 4.5.1 and
-later; enable it for Walmart and Quick Cart in Safari settings. On Android, use
-a browser that supports userscripts; the standard Chrome for Android app does
-not run userscript extensions. Quick Cart itself works in a mobile browser
-without the helper, but automatic aisle lookup requires it.
+For the mobile setup, Android users use Violentmonkey in a compatible browser;
+iPhone users use the free Userscripts extension in Safari. Install the helper
+script in the matching userscript manager and allow it to run on both Walmart
+and Quick Cart. On iPhone, enable Userscripts for both sites in Safari's
+extension settings. The storage and aisle-import flow has been confirmed with
+Userscripts on iPhone. Standard Chrome for Android does not support
+userscript-manager extensions such as Violentmonkey, so use a compatible
+browser. Quick Cart works without a userscript manager, but aisle-helper
+features require one.
 
 Select grocery items to show them in the Shopping Guide. Use the search icon
 beside an item to look up that item's aisle. Aisle details remain hidden until
-the helper returns a verified aisle. With the userscript enabled, Quick Cart
-opens a separate browser tab through a Quick Cart handoff page, then opens the
-Walmart search page while keeping Quick Cart in its own tab. The selected
-search term and request ID are passed to Walmart so the helper can continue the
-aisle search from the results page. If Android opens the Walmart app instead, go to
-**Settings > Apps > Walmart > Open by default** and turn off **Open supported
-links**, then retry in your userscript-compatible browser. Android settings
-labels vary by device; Quick Cart cannot override the operating system's
-app-link choice. Sign in, confirm the store, and start the search in the Walmart
-tab when prompted. After an aisle search finishes, tap **Return to Quick Cart**
-in the helper panel. The helper does not read or send passwords, cookies, or
-account credentials. Aisle details are saved in this browser and associated
-with the selected store and grocery item.
+the helper returns a verified aisle. Quick Cart asks the browser to open a
+Walmart handoff page in a new tab, which then redirects to Walmart search.
+Whether Walmart opens in a separate tab, replaces the current view, or opens
+the Walmart app depends on the browser and device; Quick Cart cannot force a
+particular tab or app behavior. If Android opens the Walmart app instead, go
+to **Settings > Apps > Walmart > Open by default** and turn off **Open
+supported links**, then retry in the browser with Violentmonkey enabled.
+Android settings labels vary by device. The selected search term and request ID
+are passed to Walmart so the helper can continue the aisle search from the
+results page. Sign in, confirm the store, and start the search on Walmart when
+prompted. Return to Quick Cart using the browser's tab switcher or Back
+navigation if it is no longer visible. The helper does not read or send
+passwords, cookies, or account credentials. Aisle details are saved in this
+browser and associated with the selected store and grocery item.
 The helper is best-effort and can stop working if Walmart changes its page.
 
 Saved aisle notes remain in browser storage even if the corresponding

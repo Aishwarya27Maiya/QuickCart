@@ -81,6 +81,7 @@ function AisleSearch({
         }
 
         const seenIds = new Set()
+        const validRecordIds = []
         const validEntries = freshEntries
           .filter((entry) => {
             if (
@@ -95,6 +96,7 @@ function AisleSearch({
               return false
             }
             seenIds.add(entry.id)
+            validRecordIds.push(entry.id)
             return true
           })
           .map((entry) => ({
@@ -127,16 +129,16 @@ function AisleSearch({
             'No valid aisle details found in the helper list. Check that each item has an aisle.',
           )
         }
-        window.postMessage(
-          {
-            channel: USERSCRIPT_CHANNEL,
-            type: 'manual_ack',
-            recordIds: entries
-              .map((entry) => entry?.id)
-              .filter((id) => typeof id === 'string'),
-          },
-          window.location.origin,
-        )
+        if (saved) {
+          window.postMessage(
+            {
+              channel: USERSCRIPT_CHANNEL,
+              type: 'manual_ack',
+              recordIds: validRecordIds,
+            },
+            window.location.origin,
+          )
+        }
         return
       }
 

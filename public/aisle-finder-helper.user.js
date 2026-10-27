@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Aisle Finder - Walmart aisle helper
 // @namespace    aislefinder.local
-// @version      4.4.9
+// @version      4.5.0
 // @description  Saves Walmart aisle notes to your local Quick Cart.
 // @downloadURL  https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
 // @updateURL    https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
@@ -180,7 +180,7 @@ return (function () {
   }
 
   function renderCount() {
-    countLine.textContent = added.length === 0 ? "Nothing added yet." : added.length + " item(s) ready to copy.";
+    countLine.textContent = added.length === 0 ? "No items in the helper list." : added.length + " item(s) in the helper list (Copy all).";
   }
 
   document.getElementById("af-add").addEventListener("click", async function () {
@@ -201,20 +201,39 @@ return (function () {
     try {
       var queuedEntries = await getValue(MANUAL_KEY, []);
       if (!Array.isArray(queuedEntries)) queuedEntries = [];
-      queuedEntries.push({
-        id: typeof crypto !== "undefined" && crypto.randomUUID
+      var queuedId = typeof crypto !== "undefined" && crypto.randomUUID
           ? crypto.randomUUID()
-          : Date.now() + "-" + Math.random().toString(36).slice(2),
+          : Date.now() + "-" + Math.random().toString(36).slice(2);
+      queuedEntries.push({
+        id: queuedId,
         ...entry,
         createdAt: Date.now(),
       });
       await setValue(MANUAL_KEY, queuedEntries.slice(-500));
-      statusLine.textContent = "Sent to Quick Cart. Items with a valid aisle will appear in Saved aisles; use Copy all for the full helper list.";
       aisleInput.value = "";
       lastAutoFilledAisle = "";
       addedOnCurrentPage = true;
       shelfInput.value = "";
       renderCount();
+      var deliveryDeadline = Date.now() + 15000;
+      while (Date.now() < deliveryDeadline) {
+        await new Promise(function (resolve) {
+          setTimeout(resolve, 1000);
+        });
+        var pendingEntries = await getValue(MANUAL_KEY, []);
+        if (
+          Array.isArray(pendingEntries) &&
+          !pendingEntries.some(function (queuedEntry) {
+            return queuedEntry.id === queuedId;
+          })
+        ) {
+          statusLine.textContent =
+            "Added to Quick Cart. Check Plan a trip and Saved aisles.";
+          return;
+        }
+      }
+      statusLine.textContent =
+        "Saved in the helper queue, but Quick Cart has not confirmed it yet. Keep Quick Cart open, select a Walmart store, and check that the aisle is valid.";
     } catch (error) {
       console.error("Quick Cart aisle helper storage error:", error);
       statusLine.textContent =

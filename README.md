@@ -65,11 +65,11 @@ opens a separate browser tab through a Quick Cart handoff page, then opens the
 Walmart search while keeping Quick Cart in its own tab. On iPhone, iOS may still
 hand Walmart links to the Walmart app; use Safari's website option or
 temporarily remove the Walmart app if that happens. Sign in, confirm the store,
-and start the search in the Walmart tab when prompted. The helper does not read
-or send passwords, cookies, or account credentials. Aisle
-details are saved in this
-browser and associated with the selected store and grocery item. The helper is
-best-effort and can stop working if Walmart changes its page.
+and start the search in the Walmart tab when prompted. After an aisle search
+finishes, tap **Return to Quick Cart** in the helper panel. The helper does not
+read or send passwords, cookies, or account credentials. Aisle details are
+saved in this browser and associated with the selected store and grocery item.
+The helper is best-effort and can stop working if Walmart changes its page.
 
 Saved aisle notes remain in browser storage even if the corresponding
 grocery-list item is later edited or removed. They can be edited or removed
@@ -91,5 +91,5 @@ available for copying the helper's full list.
 
 The helper timestamps queued notes. Quick Cart ignores notes queued before the
 current page session, so stale Tampermonkey entries cannot appear as results
-from a new search. Update the helper to version 4.4.3 for this protection; if an
+from a new search. Update the helper to version 4.4.4 for this protection; if an
 older queued note is needed, add it again with the updated helper.

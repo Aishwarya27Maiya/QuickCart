@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Aisle Finder - Walmart aisle helper
 // @namespace    aislefinder.local
-// @version      4.4.3
+// @version      4.4.4
 // @description  Saves Walmart aisle notes to your local Quick Cart.
 // @downloadURL  https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
 // @updateURL    https://aishwarya27maiya.github.io/QuickCart/aisle-finder-helper.user.js
@@ -21,6 +21,7 @@ const CHANNEL = "cartpath-browser-v3";
 const JOB_KEY = "cartpath.job";
 const REPORT_KEY = "cartpath.report";
 const MANUAL_KEY = "cartpath.manual-aisles";
+const QUICK_CART_URL = "https://aishwarya27maiya.github.io/QuickCart/";
 const isWalmart = ["www.walmart.com", "walmart.com"].includes(location.hostname);
 const isQuickCart =
   (location.protocol === "http:" &&
@@ -68,6 +69,7 @@ function startManual() {
     '<button id="af-copy" style="flex:1;' + GHOST + '">Copy all</button>' +
     '<button id="af-clear" style="' + GHOST + '">Clear</button>' +
     "</div>" +
+    '<button id="af-return" style="width:100%;margin-top:8px;' + BUTTON + '">Return to Quick Cart</button>' +
     '<div id="af-status" style="margin-top:6px;opacity:.8"></div>' +
     "</div>";
   document.body.appendChild(panel);
@@ -78,6 +80,9 @@ function startManual() {
   var shelfInput = document.getElementById("af-shelf");
   var countLine = document.getElementById("af-count");
   var statusLine = document.getElementById("af-status");
+  document.getElementById("af-return").addEventListener("click", function () {
+    location.href = QUICK_CART_URL;
+  });
 
   function findAisleText() {
     var node = document.querySelector('[data-testid*="aisle" i], [class*="aisle" i]');
@@ -258,7 +263,13 @@ function startManual() {
   const action = document.createElement('button');
   action.textContent = 'I’m signed in at this store — start';
   Object.assign(action.style, { padding: '10px', border: '0', borderRadius: '8px', background: '#17603f', color: '#fff', cursor: 'pointer' });
-  panel.append(title, description, action); document.body.append(panel);
+  const returnButton = document.createElement('button');
+  returnButton.type = 'button';
+  returnButton.textContent = 'Return to Quick Cart';
+  Object.assign(returnButton.style, { display: 'block', marginTop: '10px', padding: '10px', border: '1px solid #17603f', borderRadius: '8px', background: '#fff', color: '#17603f', cursor: 'pointer' });
+  returnButton.hidden = true;
+  returnButton.onclick = () => { location.href = QUICK_CART_URL; };
+  panel.append(title, description, action, returnButton); document.body.append(panel);
   const report = (status, message) => GM_setValue(REPORT_KEY, { requestId, status, message, results: status === 'done' ? job.results : undefined });
   const persist = () => GM_setValue(JOB_KEY, job);
   let navigating = false;
@@ -277,7 +288,7 @@ function startManual() {
     job.index += 1;
     if (job.index === job.items.length) {
       job.stage = 'done'; persist(); report('done', 'Search finished. Results were sent to your checklist.');
-      description.textContent = 'Finished — switch back to your checklist to see the results.'; action.hidden = true;
+      description.textContent = 'Finished — return to Quick Cart to see the results.'; action.hidden = true; returnButton.hidden = false;
     } else navigateSearch();
   };
   let startedAt = Date.now(), openedLocation = false, paused = false;
